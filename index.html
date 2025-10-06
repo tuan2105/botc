@@ -190,20 +190,28 @@
         for (let y = 0; y < n; y++) {
             if (onIdxs.includes(y)) continue;
             let sum = 0;
+            let dists = [];
             for (let on of onIdxs) {
                 let d = Math.abs(y - on);
-                d = Math.min(d, n - d); 
+                d = Math.min(d, n - d);
                 sum += d;
+                dists.push(d);
             }
             let avg = sum / onIdxs.length;
             if (Math.round(avg) === x-1) {
-                found.push(y);
+                found.push({y, dists});
             }
         }
         if (found.length === 0) {
             resultDiv.textContent = 'Không tìm thấy vị trí Demon thỏa mãn.';
         } else {
-            resultDiv.textContent = 'Các vị trí Demon thỏa mãn: ' + found.join(', ');
+            let html = '<b>Các vị trí Demon thỏa mãn:</b><br>';
+            html += '<ul style="margin-top:8px;">';
+            for (const item of found) {
+                html += `<li>Vị trí <b>${item.y}</b> &rarr; khoảng cách tới các Moon Phenomena: [${item.dists.join(', ')}]</li>`;
+            }
+            html += '</ul>';
+            resultDiv.innerHTML = html;
         }
     };
     </script>
