@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOTC Tool</title>
+    <style>
+        body {
+            background: #f7fafc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        h1,h3 {
+            text-align: center;
+            margin-top: 32px;
+            color: #2c3e50;
+            letter-spacing: 1px;
+        }
+        label {
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        #num-players, #input-x {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        #circle-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 40px auto 20px auto;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 16px 0 #0001;
+            border: 2px solid #e0e0e0;
+        }
+        #circle-container button {
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px 0 #0002;
+            border: 2px solid #888;
+            background: #eee;
+            color: #222;
+            cursor: pointer;
+            outline: none;
+        }
+        #circle-container button[data-state="on"] {
+            background: #4caf50;
+            color: #fff;
+            border-color: #388e3c;
+            box-shadow: 0 4px 16px 0 #4caf5040;
+        }
+        #circle-container button:hover {
+            border-color: #1976d2;
+            background: #e3f2fd;
+        }
+        .input-section, .result-section {
+            margin: 20px auto;
+            max-width: 777px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px 0 #0001;
+            padding: 24px 32px;
+        }
+        #calc-btn {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        #calc-btn:hover {
+            background: #1565c0;
+        }
+        #result {
+            margin-top: 18px;
+            font-size: 18px;
+            color: #c62828;
+            font-weight: 500;
+        }
+        p {
+            color: #555;
+        }
+        @media (max-width: 500px) {
+            #circle-container {
+                width: 98vw;
+                height: 98vw;
+                min-width: 200px;
+                min-height: 200px;
+                max-width: 99vw;
+                max-height: 99vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Tool để chơi game cho dễ </h1>
+    
+    <h3>Version tháng 10: Fabled Full Moon</h3>
+    <div class="input-section">
+        <label for="num-players">Số người trong bàn:</label>
+        <input type="number" id="num-players" name="Số người trong bàn" min="1" max="25">
+    </div>
+    <div id="circle-container"></div>
+    <div class="result-section">
+        <p>Vị trí số 0 là vị trí ngồi của bạn. Đánh dấu các người chơi với vị trí tương ứng mà bạn nghĩ là Moon Phenomena.</p>
+        <label for="input-x">Đêm xảy ra Full Moon (max 5, nếu nghĩ có Crescent Moon ảnh hưởng thì tự trừ đi 1):</label>
+        <input type="number" id="input-x" min="1" max="25">
+        <br>
+        <br>
+        <button id="calc-btn">Tìm Demon:</button>
+        <div id="result"></div>
+    </div>
+    <script>
+    const input = document.getElementById('num-players');
+    const container = document.getElementById('circle-container');
+    function createCircleButtons(n) {
+        container.innerHTML = '';
+        if (!n || n < 1) return;
+        const radius = 170;
+        const centerX = 200;
+        const centerY = 200;
+        for (let i = 0; i < n; i++) {
+            const angle = (i / n) * 2 * Math.PI - Math.PI/2;
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+            let label = 0;
+            if (i === 0) {
+                label = 0;
+            } else {
+                label = i;
+            }
+            const btn = document.createElement('button');
+            btn.textContent = label;
+            btn.style.position = 'absolute';
+            btn.style.left = (x-25) + 'px';
+            btn.style.top = (y-25) + 'px';
+            btn.style.width = '50px';
+            btn.style.height = '50px';
+            btn.style.borderRadius = '50%';
+            btn.style.background = '#eee';
+            btn.style.border = '2px solid #888';
+            btn.style.fontSize = '20px';
+            btn.dataset.state = 'off';
+            btn.dataset.idx = i;
+            btn.onclick = function() {
+                if (btn.dataset.state === 'off') {
+                    btn.style.background = '#4caf50';
+                    btn.style.color = '#fff';
+                    btn.dataset.state = 'on';
+                } else {
+                    btn.style.background = '#eee';
+                    btn.style.color = '#000';
+                    btn.dataset.state = 'off';
+                }
+            };
+            container.appendChild(btn);
+        }
+    }
+    input.addEventListener('change', e => {
+        createCircleButtons(Number(input.value));
+    });
+
+    document.getElementById('calc-btn').onclick = function() {
+        const n = Number(input.value);
+        const x = Number(document.getElementById('input-x').value);
+        const resultDiv = document.getElementById('result');
+        if (!n || !x) {
+            resultDiv.textContent = 'Nhập thiếu kìa ní';
+            return;
+        }
+        const btns = Array.from(container.querySelectorAll('button'));
+        const onIdxs = btns
+            .map((b, idx) => b.dataset.state === 'on' ? idx : null)
+            .filter(idx => idx !== null);
+        if (onIdxs.length === 0) {
+            resultDiv.textContent = 'Đánh dấu Moon Phenomena đi ní';
+            return;
+        }
+        let found = [];
+        for (let y = 0; y < n; y++) {
+            if (onIdxs.includes(y)) continue;
+            let sum = 0;
+            for (let on of onIdxs) {
+                let d = Math.abs(y - on);
+                d = Math.min(d, n - d); 
+                sum += d;
+            }
+            let avg = sum / onIdxs.length;
+            if (Math.round(avg) === x-1) {
+                found.push(y);
+            }
+        }
+        if (found.length === 0) {
+            resultDiv.textContent = 'Không tìm thấy vị trí Demon thỏa mãn.';
+        } else {
+            resultDiv.textContent = 'Các vị trí Demon thỏa mãn: ' + found.join(', ');
+        }
+    };
+    </script>
+</body>
+</html>
